@@ -1,0 +1,13 @@
+com\commoditymanage\api\user\UserController.class
+com\commoditymanage\entity\User.class
+com\commoditymanage\entity\CommodityType.class
+com\commoditymanage\entity\CommodityCar.class
+com\commoditymanage\entity\CommodityCombo.class
+com\commoditymanage\config\SwaggerConfig.class
+com\commoditymanage\entity\Commodity.class
+com\commoditymanage\core\model\ApiResponse.class
+com\commoditymanage\interceptor\SwaggerInterceptor.class
+com\commoditymanage\entity\PayOrderRelation.class
+com\commoditymanage\api\BaseController.class
+com\commoditymanage\entity\PayOrder.class
+com\commoditymanage\entity\CommodityComboRelation.class

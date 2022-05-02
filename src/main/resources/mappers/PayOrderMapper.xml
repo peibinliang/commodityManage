@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.commoditymanage.dao.PayOrderMapper">
+    <resultMap id="BaseResultMap" type="com.commoditymanage.entity.PayOrder">
+        <result column="order_id" property="orderId"/>
+        <result column="user_id" property="userId"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="order_price" property="orderPrice"/>
+        <result column="pay_time" property="payTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_modify" property="gmtModify"/>
+    </resultMap>
+    <insert id="savePayOrder">
+        insert into tb_pay_order(user_id, order_no, order_price)
+        values (#{order.userId}, #{order.orderNo}, #{order.orderPrice})
+    </insert>
+
+    <update id="removePayOrder">
+        update tb_pay_order
+        set is_deleted =1
+        where order_id = #{orderId}
+    </update>
+
+    <select id="countPayOrder" resultType="java.lang.Integer">
+        select count(distinct a.order_id)
+        from tb_pay_order a
+                 inner join tb_pay_order_relation b on a.order_id = b.order_id
+                 inner join tb_commodity_car c on c.car_id = b.car_id
+                 inner join tb_commodity d on c.commodity_id = d.commodity_id
+                 inner join tb_user e on a.user_id = e.user_id
+        where CONCAT_WS(',', d.commodity_name, e.user_name)
+                  like CONCAT(CONCAT('%', #{ search }), '%')
+    </select>
+
+    <select id="countPayOrderByUserId" resultType="java.lang.Integer">
+        select count(distinct a.order_id)
+        from tb_pay_order a
+                 inner join tb_pay_order_relation b on a.order_id = b.order_id
+                 inner join tb_commodity_car c on c.car_id = b.car_id
+                 inner join tb_commodity d on c.commodity_id = d.commodity_id
+        where CONCAT_WS(',', d.commodity_name)
+            like CONCAT(CONCAT('%', #{ search }), '%')
+          and a.user_id = #{userId}
+          and a.is_deleted = 0
+    </select>
+
+    <select id="listPayOrder" resultMap="BaseResultMap" resultType="com.commoditymanage.entity.PayOrder">
+        select distinct a.*,
+                        e.user_name                   userName,
+                        (select count(*)
+                         from tb_pay_order_relation
+                         where order_id = a.order_id) num
+        from tb_pay_order a
+                 inner join tb_pay_order_relation b on a.order_id = b.order_id
+                 inner join tb_commodity_car c on c.car_id = b.car_id
+                 inner join tb_commodity d on c.commodity_id = d.commodity_id
+                 inner join tb_user e on a.user_id = e.user_id
+        where CONCAT_WS(',', d.commodity_name, e.user_name)
+                  like CONCAT(CONCAT('%', #{search}), '%')
+        order by a.pay_time desc
+            limit #{ countShowed }, #{ pageSize }
+    </select>
+
+    <select id="listPayOrderByUserId" resultMap="BaseResultMap" resultType="com.commoditymanage.entity.PayOrder">
+        select distinct a.*,
+                        (select count(*)
+                         from tb_pay_order_relation
+                         where order_id = a.order_id) num
+        from tb_pay_order a
+                 inner join tb_pay_order_relation b on a.order_id = b.order_id
+                 inner join tb_commodity_car c on c.car_id = b.car_id
+                 inner join tb_commodity d on c.commodity_id = d.commodity_id
+        where CONCAT_WS(',', d.commodity_name)
+            like CONCAT(CONCAT('%', #{search}), '%')
+          and a.user_id = #{userId}
+          and a.is_deleted = 0
+        order by a.pay_time desc
+            limit #{ countShowed }, #{ pageSize }
+    </select>
+    <select id="getPayOrderByOrderNo" resultMap="BaseResultMap" resultType="com.commoditymanage.entity.PayOrder">
+        select *
+        from tb_pay_order
+        where order_no like #{orderNo}
+    </select>
+
+    <select id="listCommodityCarOfPayOrder" resultMap="com.commoditymanage.dao.CommodityCarMapper.BaseResultMap"
+            resultType="com.commoditymanage.entity.CommodityCar">
+        select a.*, b.commodity_name commodityName
+        from tb_commodity_car a
+                 inner join tb_commodity b on a.commodity_id = b.commodity_id
+                 inner join tb_pay_order_relation c on a.car_id = c.car_id
+        where c.order_id = #{orderId}
+    </select>
+
+    <select id="getPayOrderByOrderId" resultMap="BaseResultMap" resultType="com.commoditymanage.entity.PayOrder">
+        select *
+        from tb_pay_order
+        where order_id = #{orderId}
+    </select>
+</mapper>

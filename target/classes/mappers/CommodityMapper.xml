@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.commoditymanage.dao.CommodityMapper">
+    <resultMap id="BaseResultMap" type="com.commoditymanage.entity.Commodity">
+        <result column="commodity_id" property="commodityId"/>
+        <result column="commodity_name" property="commodityName"/>
+        <result column="commodity_type" property="commodityType"/>
+        <result column="commodity_no" property="commodityNo"/>
+        <result column="commodity_desc" property="commodityDesc"/>
+        <result column="price" property="price"/>
+        <result column="discount_price" property="discountPrice"/>
+        <result column="stock" property="stock"/>
+        <result column="status" property="status"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_modify" property="gmtModify"/>
+    </resultMap>
+
+    <insert id="saveCommodity">
+        insert into tb_commodity
+        <set>
+            <if test="commodity.commodityName != null">
+                commodity_name = #{commodity.commodityName},
+            </if>
+            <if test="commodity.commodityType != null">
+                commodity_type = #{commodity.commodityType},
+            </if>
+            <if test="commodity.commodityNo != null">
+                commodity_no = #{commodity.commodityNo},
+            </if>
+            <if test="commodity.commodityDesc != null">
+                commodity_desc = #{commodity.commodityDesc},
+            </if>
+            <if test="commodity.price != null">
+                price = #{commodity.price},
+            </if>
+            <if test="commodity.discountPrice != null">
+                discount_price = #{commodity.discountPrice},
+            </if>
+            <if test="commodity.stock != null">
+                stock = #{commodity.stock},
+            </if>
+            <if test="commodity.status != null">
+                status = #{commodity.status},
+            </if>
+        </set>
+    </insert>
+
+    <update id="removeCommodity">
+        update tb_commodity
+        set is_deleted = 1
+        where commodity_id = #{commodityId}
+    </update>
+
+    <update id="modifyCommodity">
+        update tb_commodity
+        <set>
+            <if test="commodity.commodityName != null">
+                commodity_name = #{commodity.commodityName},
+            </if>
+            <if test="commodity.commodityType != null">
+                commodity_type = #{commodity.commodityType},
+            </if>
+            <if test="commodity.commodityDesc != null">
+                commodity_desc = #{commodity.commodityDesc},
+            </if>
+            <if test="commodity.price != null">
+                price = #{commodity.price},
+            </if>
+            <if test="commodity.discountPrice != null">
+                discount_price = #{commodity.discountPrice},
+            </if>
+            <if test="commodity.stock != null">
+                stock = #{commodity.stock},
+            </if>
+            <if test="commodity.status != null">
+                status = #{commodity.status},
+            </if>
+            gmt_modify = now()
+        </set>
+        where commodity_id = #{commodity.commodityId}
+    </update>
+
+    <select id="getCommodityByCommodityName" resultType="com.commoditymanage.entity.Commodity">
+        select *
+        from tb_commodity
+        where commodity_name like #{commodityName}
+          and is_deleted = 0
+    </select>
+
+    <select id="countCommodity" resultType="java.lang.Integer">
+        select count(*)
+        from tb_commodity
+        where CONCAT_WS(',', commodity_name, commodity_type, commodity_no, commodity_desc)
+            like CONCAT(CONCAT('%', #{ search }), '%')
+          and is_deleted = 0
+    </select>
+
+    <select id="listCommodity" resultMap="BaseResultMap" resultType="com.commoditymanage.entity.Commodity">
+        select *
+        from tb_commodity
+        where CONCAT_WS(',', commodity_name, commodity_type, commodity_no, commodity_desc)
+            like CONCAT(CONCAT('%', #{ search }), '%')
+          and is_deleted = 0
+        order by commodity_no desc
+            limit #{ countShowed }, #{ pageSize }
+    </select>
+
+    <select id="getCommodityByCommodityId" resultMap="BaseResultMap" resultType="com.commoditymanage.entity.Commodity">
+        select *
+        from tb_commodity
+        where commodity_id = #{commodityId}
+    </select>
+
+    <select id="countCommodityOfShop" resultType="java.lang.Integer">
+        select count(*)
+        from tb_commodity
+        where CONCAT_WS(',', commodity_name, commodity_type, commodity_no, commodity_desc)
+            like CONCAT(CONCAT('%', #{ search }), '%')
+          and is_deleted = 0
+          and status = 1
+    </select>
+
+    <select id="listCommodityOfShop" resultMap="BaseResultMap" resultType="com.commoditymanage.entity.Commodity">
+        select *
+        from tb_commodity
+        where CONCAT_WS(',', commodity_name, commodity_type, commodity_no, commodity_desc)
+            like CONCAT(CONCAT('%', #{ search }), '%')
+          and is_deleted = 0
+          and status = 1
+        order by commodity_no desc
+            limit #{ countShowed }, #{ pageSize }
+    </select>
+
+
+</mapper>
